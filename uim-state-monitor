@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import socket
+
+conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+conn.connect('/var/run/user/1000/uim/socket/uim-helper')
+
+while True:
+    msg, addr = conn.recvfrom(2046)
+    msg = msg.decode('UTF-8').replace('\t', ' ')
+    im = [line for line in msg.split('\n') if line.startswith('branch')]
+    if len(im) > 0:
+        if 'anthy-utf8' not in im[0]:
+            f = open('/tmp/uim-state', 'w')
+            if 'ja_direct' in im[0] or 'ja_romaji' in im[0]:
+                f.write('English')
+            if 'ja_hiragana' in im[0]:
+                f.write('Hiragana')
+            if 'ja_katakana' in im[0]:
+                f.write('Katakana')
+            f.close()
+
